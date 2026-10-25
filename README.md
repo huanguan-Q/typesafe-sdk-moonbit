@@ -1,5 +1,8 @@
 # typesafe-sdk-moonbit
 
+[![CI](https://github.com/huanguan-Q/typesafe-sdk-moonbit/actions/workflows/ci.yml/badge.svg)](https://github.com/huanguan-Q/typesafe-sdk-moonbit/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 Community MoonBit SDK for the [TypeSafe](https://typesafe.ai/) System One API
 ([Jev](https://docs.typesafe.ai/introduction)) — typed Noul / Choice / Score
 questions, **formally verified confidence gates and retry policy**, and
