@@ -1,7 +1,7 @@
 // typesafe-sdk-moonbit module metadata.
 // Docs: https://docs.moonbitlang.com/en/latest/toolchain/moon/module.html
 
-name = "hongguan/typesafe-sdk-moonbit"
+name = "huanguan-Q/typesafe-sdk-moonbit"
 
 version = "0.1.0"
 

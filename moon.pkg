@@ -2,5 +2,5 @@ import {
   "moonbitlang/core/debug",
   "moonbitlang/core/json",
   "moonbitlang/core/string",
-  "hongguan/typesafe-sdk-moonbit/src/verified",
+  "huanguan-Q/typesafe-sdk-moonbit/src/verified",
 }

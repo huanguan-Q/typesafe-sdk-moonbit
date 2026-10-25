@@ -39,7 +39,7 @@ Not covered: Box (image) questions, HTTP-date Retry-After, async retries.
 Once published to mooncakes:
 
 ```
-moon add hongguan/typesafe-sdk-moonbit
+moon add huanguan-Q/typesafe-sdk-moonbit
 ```
 
 Until then, use a git path dependency in your `moon.mod` `import` block.
@@ -96,7 +96,7 @@ Run the no-network demo: `moon run cmd/main`.
 ### JS targets (browser / Node / Deno / workers)
 
 ```moonbit
-// import "hongguan/typesafe-sdk-moonbit/src/fetch"
+// import "huanguan-Q/typesafe-sdk-moonbit/src/fetch"
 // check/build with: moon check --target js
 evaluate_async(config, request, fn(result) { /* callback */ })
 ```
