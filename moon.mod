@@ -7,7 +7,7 @@ version = "0.1.0"
 
 readme = "README.md"
 
-repository = "https://github.com/hongguan/typesafe-sdk-moonbit"
+repository = "https://github.com/huanguan-Q/typesafe-sdk-moonbit"
 
 license = "MIT"
 
