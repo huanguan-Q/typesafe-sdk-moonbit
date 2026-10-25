@@ -1,12 +1,16 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "hongguan/typesafe-sdk-moonbit"
+package "huanguan-Q/typesafe-sdk-moonbit"
 
 import {
   "moonbitlang/core/debug",
 }
 
 // Values
-pub fn classify_response(HttpResponse) -> Result[SystemOneResponse, SdkError]
+pub fn build_http_request(ClientConfig, SystemOneRequest) -> HttpRequest
+
+pub fn classify_response(HttpResponse, Int) -> Result[SystemOneResponse, SdkError]
+
+pub fn days_from_civil(Int, Int, Int) -> Int
 
 pub fn decide(Int, Int, Int, Int) -> Decision
 
@@ -18,9 +22,11 @@ pub fn delay_ms(Int, Int, Int, Int) -> Int
 
 pub fn encode_request_to_string(SystemOneRequest) -> String
 
-pub fn evaluate_once(ClientConfig, Transport, SystemOneRequest) -> Result[SystemOneResponse, SdkError]
+pub fn evaluate_once(ClientConfig, Transport, SystemOneRequest, () -> Int) -> Result[SystemOneResponse, SdkError]
 
-pub fn evaluate_with_retries(ClientConfig, Transport, SystemOneRequest, (Int) -> Unit) -> Result[SystemOneResponse, SdkError]
+pub fn evaluate_with_retries(ClientConfig, Transport, SystemOneRequest, (Int) -> Unit, () -> Int) -> Result[SystemOneResponse, SdkError]
+
+pub fn evaluate_with_retries_async(ClientConfig, AsyncTransport, SystemOneRequest, (Int, () -> Unit) -> Unit, () -> Int, (Result[SystemOneResponse, SdkError]) -> Unit) -> Unit
 
 pub fn from_bp(Int) -> Double
 
@@ -34,7 +40,9 @@ pub fn on_failure_code(Bool) -> Int
 
 pub fn on_transport_failure(FailPolicy) -> Decision
 
-pub fn parse_retry_after(String?) -> Int?
+pub fn parse_http_date_secs(String) -> Int?
+
+pub fn parse_retry_after(String?, Int) -> Int?
 
 pub fn retry_allowed(RetryPolicy, Int) -> Bool
 
@@ -49,8 +57,27 @@ pub(all) enum Answer {
   NoulA(Double)
   ChoiceA(String, Double, Map[String, Double])
   ScoreA(Double, Double, Map[String, String], Map[String, Double])
+  BoxA(BoxCoords, Double?)
 } derive(@debug.Debug)
 pub fn Answer::to_repr(Self) -> @debug.Repr
+
+pub(all) struct AsyncTransport {
+  deliver : (HttpRequest, (Result[HttpResponse, TransportError]) -> Unit) -> Unit
+}
+pub fn AsyncTransport::scripted(Array[Result[HttpResponse, TransportError]]) -> (Self, Array[HttpRequest])
+
+pub(all) struct BoxCoords {
+  top : Double
+  bottom : Double
+  left : Double
+  right : Double
+} derive(@debug.Debug)
+pub fn BoxCoords::to_repr(Self) -> @debug.Repr
+
+pub(all) struct BoxQuestion {
+  instructions : String
+} derive(@debug.Debug)
+pub fn BoxQuestion::to_repr(Self) -> @debug.Repr
 
 pub(all) struct ChoiceQuestion {
   instructions : String
@@ -108,8 +135,15 @@ pub(all) struct HttpResponse {
 } derive(@debug.Debug)
 pub fn HttpResponse::ok_json(String) -> Self
 pub fn HttpResponse::rate_limited(String) -> Self
+pub fn HttpResponse::rate_limited_raw(String) -> Self
 pub fn HttpResponse::server_error(Int) -> Self
 pub fn HttpResponse::to_repr(Self) -> @debug.Repr
+
+pub(all) struct ImageAsset {
+  format : String
+  data_base64 : String
+} derive(@debug.Debug)
+pub fn ImageAsset::to_repr(Self) -> @debug.Repr
 
 pub(all) struct NoulQuestion {
   instructions : String
@@ -122,6 +156,7 @@ pub(all) enum Question {
   NoulQ(NoulQuestion)
   ChoiceQ(ChoiceQuestion)
   ScoreQ(ScoreQuestion)
+  BoxQ(BoxQuestion)
 } derive(@debug.Debug)
 pub fn Question::to_repr(Self) -> @debug.Repr
 
@@ -152,7 +187,9 @@ pub(all) struct SystemOneRequest {
   model : String
   state : String
   questions : Map[String, Question]
+  assets : Map[String, ImageAsset]
 } derive(@debug.Debug)
+pub fn SystemOneRequest::make(model~ : String, state~ : String, questions~ : Map[String, Question]) -> Self
 pub fn SystemOneRequest::to_repr(Self) -> @debug.Repr
 
 pub(all) struct SystemOneResponse {

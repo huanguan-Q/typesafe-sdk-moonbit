@@ -122,11 +122,13 @@ fn exp_delay(
 ///|
 /// Retry delay core in milliseconds.
 ///
+/// A server directive is any `retry_after_secs >= 0` (0 means retry
+/// immediately); a negative value means no directive was received.
+///
 /// Verified theorems:
-/// 1. With no Retry-After (`retry_after_secs <= 0`), the delay never
-///    exceeds `max_delay_ms`.
-/// 2. With a Retry-After, the delay is exactly the server's directive.
-/// 3. With no Retry-After, the delay is at least `base_delay_ms`.
+/// 1. Without a directive, the delay never exceeds `max_delay_ms`.
+/// 2. With a directive, the delay is exactly the directive in ms.
+/// 3. Without a directive, the delay is at least `base_delay_ms`.
 pub fn delay_ms(
   base_delay_ms : Int,
   max_delay_ms : Int,
@@ -138,12 +140,12 @@ pub fn delay_ms(
   attempt >= 0 &&
   max_delay_ms <= 1073741823,
   proof_ensure: result => {
-    (retry_after_secs > 0 || result <= max_delay_ms) &&
-    (retry_after_secs <= 0 || result == retry_after_secs * 1000) &&
-    (retry_after_secs > 0 || result >= base_delay_ms)
+    (retry_after_secs >= 0 || result <= max_delay_ms) &&
+    (retry_after_secs < 0 || result == retry_after_secs * 1000) &&
+    (retry_after_secs >= 0 || result >= base_delay_ms)
   },
 } {
-  if retry_after_secs > 0 {
+  if retry_after_secs >= 0 {
     retry_after_secs * 1000
   } else {
     let grown = exp_delay(base_delay_ms, attempt, max_delay_ms)

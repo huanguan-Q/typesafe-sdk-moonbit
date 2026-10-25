@@ -50,24 +50,74 @@ pub(all) struct ScoreQuestion {
 pub extend ScoreQuestion with @moonbitlang/core/debug.Debug::{to_repr}
 
 ///|
-/// A question value. Box (image) questions are not supported in v0.1.
+/// A question value. Box questions locate a region in an image asset and
+/// require the TypeSafe-Danger-Zone-Images header, which the client sends
+/// automatically when the request carries assets.
 pub(all) enum Question {
   NoulQ(NoulQuestion)
   ChoiceQ(ChoiceQuestion)
   ScoreQ(ScoreQuestion)
+  BoxQ(BoxQuestion)
 } derive(Debug)
 
 ///|
 pub extend Question with @moonbitlang/core/debug.Debug::{to_repr}
 
 ///|
-/// System One request: the model alias, the shared state, and the named
-/// question set. Question names are yours; the response reuses them.
+/// Box question: locate what the instructions describe in an image asset
+/// referenced by placeholder. Answers are normalized edge coordinates.
+pub(all) struct BoxQuestion {
+  instructions : String
+} derive(Debug)
+
+///|
+pub extend BoxQuestion with @moonbitlang/core/debug.Debug::{to_repr}
+
+///|
+/// An image asset, keyed by an opaque placeholder you reference from state
+/// or question text. Base64 form only: multipart part-based assets are not
+/// supported in v0.2. Image data is sent to the API (see README data egress).
+pub(all) struct ImageAsset {
+  format : String
+  data_base64 : String
+} derive(Debug)
+
+///|
+pub extend ImageAsset with @moonbitlang/core/debug.Debug::{to_repr}
+
+///|
+/// Box edges as fractions of image height/width, 0 to 1. Vertical from the
+/// top, horizontal from the left.
+pub(all) struct BoxCoords {
+  top : Double
+  bottom : Double
+  left : Double
+  right : Double
+} derive(Debug)
+
+///|
+pub extend BoxCoords with @moonbitlang/core/debug.Debug::{to_repr}
+
+///|
+/// System One request: the model alias, the shared state, the named
+/// question set, and optional image assets. Question names are yours; the
+/// response reuses them.
 pub(all) struct SystemOneRequest {
   model : String
   state : String
   questions : Map[String, Question]
+  assets : Map[String, ImageAsset]
 } derive(Debug)
+
+///|
+/// Build a request with no image assets.
+pub fn SystemOneRequest::make(
+  model~ : String,
+  state~ : String,
+  questions~ : Map[String, Question],
+) -> SystemOneRequest {
+  { model, state, questions, assets: Map([]), }
+}
 
 ///|
 pub extend SystemOneRequest with @moonbitlang/core/debug.Debug::{to_repr}
@@ -78,6 +128,7 @@ pub(all) enum Answer {
   NoulA(Double)
   ChoiceA(String, Double, Map[String, Double])
   ScoreA(Double, Double, Map[String, String], Map[String, Double])
+  BoxA(BoxCoords, Double?)
 } derive(Debug)
 
 ///|

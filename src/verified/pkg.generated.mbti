@@ -1,5 +1,5 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "hongguan/typesafe-sdk-moonbit/src/verified"
+package "huanguan-Q/typesafe-sdk-moonbit/src/verified"
 
 // Values
 pub fn decide_code(Int, Int, Int, Int) -> Int

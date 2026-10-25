@@ -14,13 +14,28 @@ fn encode_request(request : SystemOneRequest) -> Json {
   request.questions.each(fn(name, question) {
     questions.set(name, encode_question(question))
   })
-  Json::object(
-    Map([
-      ("model", Json::string(request.model)),
-      ("state", Json::string(request.state)),
-      ("questions", Json::object(questions)),
-    ]),
-  )
+  let fields : Map[String, Json] = Map([
+    ("model", Json::string(request.model)),
+    ("state", Json::string(request.state)),
+    ("questions", Json::object(questions)),
+  ])
+  if request.assets.length() > 0 {
+    let assets : Map[String, Json] = Map([])
+    request.assets.each(fn(name, asset) {
+      assets.set(
+        name,
+        Json::object(
+          Map([
+            ("type", Json::string("image")),
+            ("format", Json::string(asset.format)),
+            ("data_base64", Json::string(asset.data_base64)),
+          ]),
+        ),
+      )
+    })
+    fields.set("assets", Json::object(assets))
+  }
+  Json::object(fields)
 }
 
 ///|
@@ -58,6 +73,13 @@ fn encode_question(question : Question) -> Json {
         ]),
       )
     }
+    Question::BoxQ(bq) =>
+      Json::object(
+        Map([
+          ("type", Json::string("box")),
+          ("instructions", Json::string(bq.instructions)),
+        ]),
+      )
     Question::ScoreQ(sq) => {
       let levels : Array[Json] = []
       for level in sq.levels {
@@ -173,7 +195,34 @@ fn decode_answer(answer : Json) -> Result[Answer, String] {
               )
             _ => Err("score answer missing fields")
           }
-        _ => Err("unsupported answer type (box/image questions not in v0.1)")
+        Some(Json::String("box")) =>
+          match fields.get("box") {
+            Some(Json::Object(coords)) =>
+              match
+                (
+                  get_number(coords, "top"),
+                  get_number(coords, "bottom"),
+                  get_number(coords, "left"),
+                  get_number(coords, "right"),
+                ) {
+                (Some(top), Some(bottom), Some(left), Some(right)) => {
+                  let confidence : Double? = match
+                    get_number(fields, "confidence") {
+                    Some(value) => Some(value)
+                    None => None
+                  }
+                  Ok(
+                    Answer::BoxA(
+                      BoxCoords::{ top, bottom, left, right, },
+                      confidence,
+                    ),
+                  )
+                }
+                _ => Err("box answer missing edge coordinates")
+              }
+            _ => Err("box answer missing box coordinates")
+          }
+        _ => Err("unsupported answer type")
       }
     _ => Err("answer is not a JSON object")
   }

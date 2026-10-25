@@ -31,11 +31,29 @@ Verified cores live in [`src/verified/verified.mbt`](src/verified/verified.mbt)
 
 ## Status
 
-Experimental v0.1. Covered: Noul, Choice, and Score questions with typed
-answers, request encoding, response decoding, status classification
-(200 / 429 / 5xx / other), Retry-After (delay-seconds form) with exponential
-backoff, scripted mock transport, and a `fetch` binding for JS targets.
-Not covered: Box (image) questions, HTTP-date Retry-After, async retries.
+v0.2. Covered: Noul, Choice, Score, **and Box (image) questions** via
+base64 assets — the TypeSafe-Danger-Zone-Images header is sent
+automatically when the request carries assets; **Retry-After in both
+delay-seconds and IMF-fixdate form** (HTTP-date resolved against an
+injected clock; dates in the past mean retry immediately); **asynchronous
+retries** through a callback-based `AsyncTransport` (plus a `fetch` +
+`setTimeout` binding for JS targets); request encoding; response
+decoding; status classification; exponential backoff; scripted sync and
+async mock transports.
+Not covered: multipart part-based image assets (base64 only), the two
+deprecated Retry-After date formats (RFC 850, asctime), and language-level
+`async` (callbacks instead).
+
+### Breaking changes in 0.2 (from 0.1)
+
+- `SystemOneRequest` gained an `assets` field — prefer the
+  `SystemOneRequest::make` builder over struct literals.
+- `evaluate_once` / `evaluate_with_retries` / `classify_response` take a
+  `now_secs : () -> Int` clock (needed for HTTP-date Retry-After).
+- `parse_retry_after` takes `(header, now_secs)`; `"0"` now means
+  *Some(0)* (retry immediately) instead of *None*.
+- In `delay_ms`, "no directive" is now any negative value; `0` is a
+  directive meaning zero delay.
 
 ## Install
 
@@ -116,9 +134,10 @@ your own backend in production web apps.
 | `on_failure_code` | Blocked ⟺ fail-closed; never Proceed — a transport failure never yields a green light. |
 | `should_retry` | Exactly `attempts_done < max_retries`. |
 | `exp_delay` | Result stays within `[d, 2·max]`; overflow-safe for `max ≤ 2³⁰−1`. |
-| `delay_ms` | Retry-After honored exactly; otherwise bounded by `[base, max]`. |
+| `delay_ms` | Any directive (≥ 0, including 0 = immediate) is honored exactly; without one the delay stays within `[base, max]`. |
 
-Reproduce: `moon prove` → expect `1 of 1 packages proved, 6 goals proved`.
+Reproduce: `moon prove` → expect `1 of 1 packages proved, 6 goals proved`
+(22 tests, library coverage > 90%).
 Full chain: `moon check && moon test && moon build && moon prove`.
 
 ## Network-free testing
@@ -129,9 +148,10 @@ without sockets. See `typesafe-sdk-moonbit_test.mbt` (16 tests).
 
 ## Data egress
 
-- Calling the real API sends your `state` and question texts (and nothing
-  else) to `https://api.typesafe.ai` over HTTPS, authorized by your API key
-  sent as a bearer header.
+- Calling the real API sends your `state` and question texts — and, for box
+  questions, the base64 image bytes in `assets` — to
+  `https://api.typesafe.ai` over HTTPS, authorized by your API key sent as
+  a bearer header.
 - The SDK itself makes no other network calls and includes no telemetry.
 - Everything in this repository's tests and demo runs offline against
   scripted responses.

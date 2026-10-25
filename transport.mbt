@@ -99,3 +99,44 @@ pub fn Transport::scripted(
   }
   (transport, calls)
 }
+
+///|
+/// 429 Too Many Requests with an arbitrary Retry-After header value
+/// (delay-seconds or IMF-fixdate form).
+pub fn HttpResponse::rate_limited_raw(retry_after : String) -> HttpResponse {
+  { status: 429, headers: Map([("retry-after", retry_after)]), body: "", }
+}
+
+///|
+/// Asynchronous transport: `deliver` takes a completion callback, so
+/// non-blocking HTTP clients (fetch, XHR, worker messaging) adapt without
+/// blocking a thread.
+pub(all) struct AsyncTransport {
+  deliver : (HttpRequest, (Result[HttpResponse, TransportError]) -> Unit) -> Unit
+}
+
+///|
+/// Build a scripted async transport for network-free tests: responses are
+/// consumed in order and the last one repeats, with every request recorded.
+pub fn AsyncTransport::scripted(
+  responses : Array[Result[HttpResponse, TransportError]],
+) -> (AsyncTransport, Array[HttpRequest]) {
+  let calls : Array[HttpRequest] = []
+  let transport : AsyncTransport = {
+    deliver: fn(
+      request : HttpRequest,
+      on_result : (Result[HttpResponse, TransportError]) -> Unit,
+    ) -> Unit {
+      let index = calls.length()
+      calls.push(request)
+      if responses.length() == 0 {
+        on_result(Err(NetworkFailure("mock: no scripted responses")))
+      } else if index < responses.length() {
+        on_result(responses[index])
+      } else {
+        on_result(responses[responses.length() - 1])
+      }
+    },
+  }
+  (transport, calls)
+}
