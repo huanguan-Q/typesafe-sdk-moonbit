@@ -44,6 +44,28 @@ jobs:
       - name: moon test
         run: moon test
 
+      - name: Coverage gate (library packages, floor 85%)
+        run: |
+          moon test --enable-coverage
+          moon coverage report -f summary | tee coverage.txt
+          python3 -c "
+          import sys
+          hit = total = 0
+          for ln in open('coverage.txt'):
+              name, _, frac = ln.strip().rpartition(': ')
+              if not frac or name == 'Total' or name.startswith('cmd/'):
+                  continue
+              try:
+                  a, b = frac.split('/')
+                  hit += int(a)
+                  total += int(b)
+              except ValueError:
+                  pass
+          pct = 100.0 * hit / total if total else 0.0
+          print(f'library coverage: {hit}/{total} = {pct:.1f}% (floor 85%)')
+          sys.exit(0 if pct >= 85.0 else 1)
+          "
+
       - name: moon build (wasm + js targets)
         run: |
           moon build
