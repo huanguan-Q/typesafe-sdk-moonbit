@@ -1,0 +1,7 @@
+import {
+  "hongguan/typesafe-sdk-moonbit" @sdk,
+}
+
+options(
+  targets: { "fetch_js.mbt": [ "js" ] },
+)

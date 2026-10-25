@@ -1,0 +1,5 @@
+import {
+  "hongguan/typesafe-sdk-moonbit" @lib,
+}
+
+pkgtype(kind: "executable")

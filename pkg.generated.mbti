@@ -1,0 +1,183 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "hongguan/typesafe-sdk-moonbit"
+
+import {
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub fn classify_response(HttpResponse) -> Result[SystemOneResponse, SdkError]
+
+pub fn decide(Int, Int, Int, Int) -> Decision
+
+pub fn decide_code(Int, Int, Int, Int) -> Int
+
+pub fn decode_response(String) -> Result[SystemOneResponse, SdkError]
+
+pub fn delay_ms(Int, Int, Int, Int) -> Int
+
+pub fn encode_request_to_string(SystemOneRequest) -> String
+
+pub fn evaluate_once(ClientConfig, Transport, SystemOneRequest) -> Result[SystemOneResponse, SdkError]
+
+pub fn evaluate_with_retries(ClientConfig, Transport, SystemOneRequest, (Int) -> Unit) -> Result[SystemOneResponse, SdkError]
+
+pub fn from_bp(Int) -> Double
+
+pub fn is_retryable(SdkError) -> Bool
+
+pub fn noul_gate(Int, Int, Int) -> GateVerdict
+
+pub fn noul_gate_code(Int, Int, Int) -> Int
+
+pub fn on_failure_code(Bool) -> Int
+
+pub fn on_transport_failure(FailPolicy) -> Decision
+
+pub fn parse_retry_after(String?) -> Int?
+
+pub fn retry_allowed(RetryPolicy, Int) -> Bool
+
+pub fn should_retry(Int, Int) -> Bool
+
+pub fn to_bp(Double) -> Int
+
+// Errors
+
+// Types and methods
+pub(all) enum Answer {
+  NoulA(Double)
+  ChoiceA(String, Double, Map[String, Double])
+  ScoreA(Double, Double, Map[String, String], Map[String, Double])
+} derive(@debug.Debug)
+pub fn Answer::to_repr(Self) -> @debug.Repr
+
+pub(all) struct ChoiceQuestion {
+  instructions : String
+  options : Map[String, String]
+} derive(@debug.Debug)
+pub fn ChoiceQuestion::to_repr(Self) -> @debug.Repr
+
+pub(all) struct ClientConfig {
+  api_key : String
+  model : String
+  base_url : String
+  retry : RetryPolicy
+} derive(@debug.Debug)
+pub fn ClientConfig::make(api_key~ : String, model? : String, base_url? : String, retry? : RetryPolicy) -> Self
+pub fn ClientConfig::to_repr(Self) -> @debug.Repr
+
+pub(all) enum Decision {
+  Proceed
+  Escalate
+  Blocked
+} derive(Eq, @debug.Debug)
+pub fn Decision::equal(Self, Self) -> Bool
+pub fn Decision::not_equal(Self, Self) -> Bool
+pub fn Decision::to_repr(Self) -> @debug.Repr
+
+pub(all) enum FailPolicy {
+  FailOpen
+  FailClosed
+} derive(Eq, @debug.Debug)
+pub fn FailPolicy::equal(Self, Self) -> Bool
+pub fn FailPolicy::not_equal(Self, Self) -> Bool
+pub fn FailPolicy::to_repr(Self) -> @debug.Repr
+
+pub(all) enum GateVerdict {
+  Proceed
+  Escalate
+  Reject
+} derive(Eq, @debug.Debug)
+pub fn GateVerdict::equal(Self, Self) -> Bool
+pub fn GateVerdict::not_equal(Self, Self) -> Bool
+pub fn GateVerdict::to_repr(Self) -> @debug.Repr
+
+pub(all) struct HttpRequest {
+  url : String
+  http_method : String
+  headers : Map[String, String]
+  body : String
+} derive(@debug.Debug)
+pub fn HttpRequest::to_repr(Self) -> @debug.Repr
+
+pub(all) struct HttpResponse {
+  status : Int
+  headers : Map[String, String]
+  body : String
+} derive(@debug.Debug)
+pub fn HttpResponse::ok_json(String) -> Self
+pub fn HttpResponse::rate_limited(String) -> Self
+pub fn HttpResponse::server_error(Int) -> Self
+pub fn HttpResponse::to_repr(Self) -> @debug.Repr
+
+pub(all) struct NoulQuestion {
+  instructions : String
+  yes_when : String?
+  no_when : String?
+} derive(@debug.Debug)
+pub fn NoulQuestion::to_repr(Self) -> @debug.Repr
+
+pub(all) enum Question {
+  NoulQ(NoulQuestion)
+  ChoiceQ(ChoiceQuestion)
+  ScoreQ(ScoreQuestion)
+} derive(@debug.Debug)
+pub fn Question::to_repr(Self) -> @debug.Repr
+
+pub(all) struct RetryPolicy {
+  max_retries : Int
+  base_delay_ms : Int
+  max_delay_ms : Int
+} derive(@debug.Debug)
+pub fn RetryPolicy::defaults() -> Self
+pub fn RetryPolicy::to_repr(Self) -> @debug.Repr
+
+pub(all) struct ScoreQuestion {
+  instructions : String
+  levels : Array[String]
+} derive(@debug.Debug)
+pub fn ScoreQuestion::to_repr(Self) -> @debug.Repr
+
+pub(all) enum SdkError {
+  Network(String)
+  RateLimited(Int?)
+  Server(Int, String)
+  InvalidRequest(Int, String)
+  Decode(String)
+} derive(@debug.Debug)
+pub fn SdkError::to_repr(Self) -> @debug.Repr
+
+pub(all) struct SystemOneRequest {
+  model : String
+  state : String
+  questions : Map[String, Question]
+} derive(@debug.Debug)
+pub fn SystemOneRequest::to_repr(Self) -> @debug.Repr
+
+pub(all) struct SystemOneResponse {
+  model : String
+  answers : Map[String, Answer]
+  usage : Usage
+} derive(@debug.Debug)
+pub fn SystemOneResponse::to_repr(Self) -> @debug.Repr
+
+pub(all) struct Transport {
+  deliver : (HttpRequest) -> Result[HttpResponse, TransportError]
+}
+pub fn Transport::scripted(Array[Result[HttpResponse, TransportError]]) -> (Self, Array[HttpRequest])
+
+pub(all) enum TransportError {
+  NetworkFailure(String)
+} derive(@debug.Debug)
+pub fn TransportError::to_repr(Self) -> @debug.Repr
+
+pub(all) struct Usage {
+  input_tokens : Int
+  output_tokens : Int
+} derive(@debug.Debug)
+pub fn Usage::to_repr(Self) -> @debug.Repr
+
+// Type aliases
+
+// Traits
